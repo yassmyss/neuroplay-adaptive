@@ -184,6 +184,18 @@ header {
 .stat-value.amber { color: var(--amber); }
 .stat-value.purple { color: var(--purple); }
 
+/* State btn */
+.state-btn.end {
+  background: transparent;
+  color: var(--text2);
+  border: 1px solid var(--border2);
+}
+
+.state-btn.end:hover {
+  background: var(--red-dim);
+  color: var(--red);
+}
+
 /* Game area */
 #game-wrapper {
   position: relative;
@@ -717,7 +729,10 @@ td.val-state { }
         <h2>¡Listo!</h2>
         <p>Selecciona un modo arriba y pulsa para empezar.</p>
         <div class="btn-row">
-          <button class="btn btn-primary" onclick="startGame()">▶ Empezar ronda</button>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="startGame()">▶ Empezar ronda</button>
+            <button class="state-btn end" onclick="endSession()">⏹ Terminar sesión</button>
+          </div>
         </div>
       </div>
     </div>
@@ -754,11 +769,14 @@ td.val-state { }
       <button class="state-btn" onclick="saveRound('Frustracion')">Frustración 😤</button>
       <button class="state-btn" onclick="saveRound('Cansancio')">Cansancio 😴</button>
       <button class="state-btn" onclick="saveRound('Sobrecarga')">Sobrecarga ⚡</button>
+      <!-- Botón para terminar -->
+      <button class="state-btn" style="background:#1a1a24;color:#aaa;" onclick="endSession()">⏹ Terminar sesión
+      </button>
     </div>
   </div>
 
   <!-- Dataset panel -->
-  <div class="data-panel">
+  <div class="data-panel" id="data-panel" style="display:none;">
     <div class="panel-header">
       <div class="panel-title">📊 Dataset</div>
       <div class="panel-actions">
@@ -776,6 +794,25 @@ td.val-state { }
 <script>
 /* ─── State ─── */
 const game = document.getElementById('game');
+
+// === CONFIGURACION GOOGLE SHEETS ===
+// Añado URL de despliegue de Apps Script que termina en /exec
+const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwYomTIShK2R9DJP-HgzYvcvFlLIrC4Ek0SaijeHL-dKjid_jEdiGjUAHzYacU9Nybjjg/exec';
+const SEND_TO_GOOGLE_SHEETS = true;
+
+let sessionId = localStorage.getItem('np_session_id');
+if (!sessionId) {
+  sessionId = 's_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+  localStorage.setItem('np_session_id', sessionId);
+}
+
+let gamerId = localStorage.getItem('np_gamer_id');
+if (!gamerId) {
+  gamerId = prompt('Introduce un alias gamer (ejemplo: gamer01):') || ('anon_' + Math.floor(Math.random() * 100000));
+  gamerId = gamerId.trim().replace(/\s+/g, '_').slice(0, 30);
+  localStorage.setItem('np_gamer_id', gamerId);
+}
+
 let round = Number(localStorage.getItem('np_round')) || 1;
 let difficulty = Number(localStorage.getItem('np_diff')) || 1;
 let dataset = JSON.parse(localStorage.getItem('np_dataset') || '[]');
@@ -787,6 +824,43 @@ let reactionTimes = [];
 let isPlaying = false;
 let streak = 0;
 let score = 0;
+
+/* EndSession */
+function endSession() {
+  isPlaying = false;
+  clearInterval(tickInterval);
+  cancelAnimationFrame(rafId);
+  clearTimeout(reflexTimeout);
+
+  const totalPartidas = dataset.length;
+  const ultimasPartidas = dataset.slice(-5);
+  const mediaPrecision = ultimasPartidas.length
+    ? Math.round(ultimasPartidas.reduce((sum, row) => sum + Number(row.precision_pct || 0), 0) / ultimasPartidas.length)
+    : 0;
+
+  const mensajeMotivador = mediaPrecision >= 70
+    ? "🎯 Gran trabajo. Has mantenido un rendimiento muy sólido."
+    : mediaPrecision >= 40
+      ? "⚡ Buen entrenamiento. Hay margen para seguir afinando reflejos y control."
+      : "💪 Cada ronda cuenta. Sigue practicando para mejorar tu precisión.";
+
+  game.innerHTML = `
+    <div id="overlay" style="display:flex;">
+      <h2>🔥 Entrenamiento finalizado</h2>
+      <p>
+        Gracias por participar en NeuroPlay Adaptive.<br><br>
+        💡 Tu rendimiento ha sido registrado correctamente.<br>
+        Partidas registradas en este navegador: <strong>${totalPartidas}</strong><br>
+        Dificultad actual: <strong>Nivel ${difficulty}</strong><br>
+        ${mediaPrecision > 0 ? `Precisión media reciente: <strong>${mediaPrecision}%</strong><br><br>` : "<br>"}
+        ${mensajeMotivador}
+      </p>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="startGame()">🔁 Jugar otra vez</button>
+      </div>
+    </div>
+  `;
+}
 
 /* Reflex state */
 let reflexTimeout = null;
@@ -828,6 +902,13 @@ function selectMode(mode) {
 function avg(arr) {
   if (!arr.length) return 0;
   return Math.round(arr.reduce((a, b) => a + b, 0) / arr.length);
+}
+
+function stdDev(arr) {
+  if (arr.length < 2) return 0;
+  const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
+  const variance = arr.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0) / arr.length;
+  return Math.round(Math.sqrt(variance));
 }
 
 function clamp(v, mn, mx) { return Math.max(mn, Math.min(mx, v)); }
@@ -1276,29 +1357,61 @@ function predictState() {
   return 'Relax';
 }
 
+async function sendToGoogleSheets(row) {
+  if (!SEND_TO_GOOGLE_SHEETS) return;
+
+  if (!GOOGLE_SHEETS_URL || GOOGLE_SHEETS_URL.includes('PEGA_AQUI')) {
+    console.warn('No se ha configurado GOOGLE_SHEETS_URL. Se guarda solo en localStorage.');
+    return;
+  }
+
+  try {
+    await fetch(GOOGLE_SHEETS_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify(row)
+    });
+    console.log('Datos enviados a Google Sheets');
+  } catch (error) {
+    console.error('No se pudieron enviar los datos a Google Sheets:', error);
+  }
+}
+
 /* ─── Save round ─── */
-function saveRound(realState) {
+async function saveRound(realState) {
   const acc = totalClicks > 0 ? Math.round((hits / totalClicks) * 100) : 0;
   const react = avg(reactionTimes);
   const predicted = predictState();
 
   const row = {
     fecha: new Date().toISOString().slice(0, 19).replace('T', ' '),
+    session_id: sessionId,
+    gamer_id: gamerId,
     ronda: round,
     modo: currentMode,
+    tipo_tarea: currentMode === 'reflejos' ? 'reaccion' : 'coordinacion',
     duracion_s: 20,
     aciertos: hits,
     errores: misses,
     interacciones: totalClicks,
     precision_pct: acc,
     reaccion_ms: react,
+    variabilidad_reaccion: stdDev(reactionTimes),
     dificultad: difficulty,
     estado_predicho: predicted,
     estado_real: realState
   };
 
+  // Guardado local para respaldo y depuracion
   dataset.push(row);
   localStorage.setItem('np_dataset', JSON.stringify(dataset));
+
+  // Envio cloud a Google Sheets
+  await sendToGoogleSheets(row);
+
   adaptDifficulty(realState);
 
   round++;
@@ -1314,9 +1427,14 @@ function saveRound(realState) {
   ov.style.display = 'flex';
   ov.innerHTML = `
     <h2>Ronda ${round - 1} guardada ✓</h2>
-    <p>Estado: <strong>${realState}</strong> · Predicho: <strong>${predictState()}</strong><br>Dificultad ajustada a nivel ${difficulty}</p>
+    <p>
+      Estado: <strong>${realState}</strong> · Predicho: <strong>${predicted}</strong><br>
+      Dificultad ajustada a nivel <strong>${difficulty}</strong><br><br>
+      Puedes seguir entrenando o finalizar la sesión.
+    </p>
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="startGame()">▶ Ronda ${round}</button>
+      <button class="btn btn-primary" onclick="startGame()">▶ Jugar otra ronda</button>
+      <button class="state-btn end" onclick="endSession()">⏹ Finalizar entrenamiento</button>
     </div>
   `;
   game.innerHTML = '';
@@ -1341,10 +1459,11 @@ function renderDataset() {
 
   const headers = Object.keys(dataset[0]);
   const labelMap = {
-    fecha: 'Fecha', ronda: 'Ronda', modo: 'Modo', duracion_s: 'Dur.s',
+    fecha: 'Fecha', session_id: 'Sesion', gamer_id: 'Gamer', ronda: 'Ronda',
+    modo: 'Modo', tipo_tarea: 'Tarea', duracion_s: 'Dur.s',
     aciertos: 'Aciert.', errores: 'Errores', interacciones: 'Interact.',
-    precision_pct: 'Prec.%', reaccion_ms: 'React.ms', dificultad: 'Dif.',
-    estado_predicho: 'Predicho', estado_real: 'Real'
+    precision_pct: 'Prec.%', reaccion_ms: 'React.ms', variabilidad_reaccion: 'Var.react.',
+    dificultad: 'Dif.', estado_predicho: 'Predicho', estado_real: 'Real'
   };
 
   let html = '<table><thead><tr>';
