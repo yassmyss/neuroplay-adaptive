@@ -124,7 +124,7 @@ header {
 /* Mode selector */
 .mode-selector {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(4, 1fr);
   gap: 10px;
 }
 
@@ -643,6 +643,98 @@ td.val-state { }
 /* Chase crosshair */
 #game.chase-mode { cursor: none; }
 
+
+/* Extra cognitive modes */
+.memory-marker {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  position: absolute;
+  background: radial-gradient(circle at 35% 35%, #81d4fa, var(--blue) 65%, #0288d1);
+  border: 2px solid rgba(79,195,247,0.8);
+  box-shadow: 0 0 28px rgba(79,195,247,0.55);
+  animation: pop-in 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.memory-hint {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  color: var(--text2);
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+  text-align: center;
+  padding: 20px;
+}
+
+.memory-click {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  border: 2px solid var(--green);
+  background: var(--green-dim);
+  pointer-events: none;
+  animation: hit-anim 0.4s ease-out forwards;
+}
+
+.stroop-card {
+  position: absolute;
+  inset: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+}
+
+.stroop-word {
+  font-size: clamp(44px, 10vw, 96px);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  font-family: 'Space Mono', monospace;
+  text-transform: uppercase;
+}
+
+.stroop-help {
+  color: var(--text2);
+  font-size: 14px;
+  text-align: center;
+}
+
+.stroop-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.stroop-btn {
+  min-width: 110px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.stroop-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--blue);
+  background: var(--blue-dim);
+}
+
+@media (max-width: 900px) {
+  .mode-selector { grid-template-columns: repeat(2, 1fr); }
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   .stats-bar { grid-template-columns: repeat(3, 1fr); }
@@ -686,6 +778,20 @@ td.val-state { }
         <div class="mode-desc">Caza el círculo rojo con el ratón. La IA escapa con evasión adaptativa.</div>
       </div>
     </div>
+    <div class="mode-card" id="card-memoria" onclick="selectMode('memoria')">
+      <div class="mode-icon">🧠</div>
+      <div class="mode-info">
+        <div class="mode-title">Modo Memoria</div>
+        <div class="mode-desc">Recuerda posiciones y márcalas después. Mide memoria visual y concentración.</div>
+      </div>
+    </div>
+    <div class="mode-card" id="card-stroop" onclick="selectMode('stroop')">
+      <div class="mode-icon">🎨</div>
+      <div class="mode-info">
+        <div class="mode-title">Modo Stroop</div>
+        <div class="mode-desc">Elige el color real, no la palabra. Mide atención selectiva y control cognitivo.</div>
+      </div>
+    </div>
   </div>
 
   <!-- Stats bar -->
@@ -727,7 +833,7 @@ td.val-state { }
       <div id="streak-indicator">🔥 x0</div>
       <div id="overlay">
         <h2>¡Listo!</h2>
-        <p>Selecciona un modo arriba y pulsa para empezar.</p>
+        <p>Selecciona uno de los cuatro modos y pulsa para empezar.</p>
         <div class="btn-row">
           <div class="btn-row">
             <button class="btn btn-primary" onclick="startGame()">▶ Empezar ronda</button>
@@ -751,6 +857,14 @@ td.val-state { }
     <div class="inst-item">
       <div class="inst-dot" style="background:var(--amber)"></div>
       <div class="inst-text"><strong>Racha:</strong> acierta seguido para multiplicar tu puntuación. Una racha de ×3 aumenta la dificultad.</div>
+    </div>
+    <div class="inst-item">
+      <div class="inst-dot" style="background:var(--purple)"></div>
+      <div class="inst-text"><strong>Memoria:</strong> observa los puntos, recuerda su posición y toca donde estaban.</div>
+    </div>
+    <div class="inst-item">
+      <div class="inst-dot" style="background:var(--amber)"></div>
+      <div class="inst-text"><strong>Stroop:</strong> responde al color real del texto, no a lo que dice la palabra.</div>
     </div>
     <div class="inst-item">
       <div class="inst-dot" style="background:var(--green)"></div>
@@ -831,6 +945,7 @@ function endSession() {
   clearInterval(tickInterval);
   cancelAnimationFrame(rafId);
   clearTimeout(reflexTimeout);
+  clearTimeout(memoryTimeout);
 
   const totalPartidas = dataset.length;
   const ultimasPartidas = dataset.slice(-5);
@@ -879,6 +994,23 @@ let preyPhase = 0;
 let tickInterval = null;
 let roundStartTime = 0;
 
+/* Memory state */
+let memoryTargets = [];
+let memorySolved = [];
+let memoryShowing = false;
+let memoryChallengeStart = 0;
+let memoryTimeout = null;
+
+/* Stroop state */
+let stroopStartTime = 0;
+let stroopCurrentColor = null;
+const STROOP_COLORS = [
+  { name: 'Azul', value: '#4fc3f7', key: 'azul' },
+  { name: 'Rojo', value: '#ff6b6b', key: 'rojo' },
+  { name: 'Verde', value: '#69f0ae', key: 'verde' },
+  { name: 'Amarillo', value: '#ffcc02', key: 'amarillo' }
+];
+
 /* ─── Difficulty pips ─── */
 function renderDiffPips() {
   const pip = document.getElementById('diff-pips');
@@ -894,8 +1026,11 @@ function renderDiffPips() {
 /* ─── Mode selection ─── */
 function selectMode(mode) {
   currentMode = mode;
-  document.getElementById('card-reflejos').classList.toggle('active', mode === 'reflejos');
-  document.getElementById('card-persecucion').classList.toggle('active', mode === 'persecucion');
+
+  ['reflejos', 'persecucion', 'memoria', 'stroop'].forEach(m => {
+    const card = document.getElementById('card-' + m);
+    if (card) card.classList.toggle('active', mode === m);
+  });
 }
 
 /* ─── Utils ─── */
@@ -1032,11 +1167,19 @@ function startGame() {
     targetExpireMs = Math.max(900, 2200 - (difficulty - 1) * 280);
     spawnReflexTargets();
     tickInterval = setInterval(tick, 1000);
-  } else {
+  } else if (currentMode === 'persecucion') {
     game.className = 'chase-mode';
     initChase();
     tickInterval = setInterval(tick, 1000);
     chaseLoop();
+  } else if (currentMode === 'memoria') {
+    game.className = '';
+    startMemoryChallenge();
+    tickInterval = setInterval(tick, 1000);
+  } else if (currentMode === 'stroop') {
+    game.className = '';
+    spawnStroopChallenge();
+    tickInterval = setInterval(tick, 1000);
   }
 }
 
@@ -1300,12 +1443,172 @@ function renderChase() {
   preyEl.style.top = preyPos.y + 'px';
 }
 
+
+/* ─── MEMORY MODE ─── */
+function startMemoryChallenge() {
+  if (!isPlaying || currentMode !== 'memoria') return;
+
+  clearTimeout(memoryTimeout);
+  game.innerHTML = '<div id="streak-indicator">🔥 ×' + streak + '</div>';
+
+  memoryTargets = [];
+  memorySolved = [];
+  memoryShowing = true;
+
+  const amount = Math.min(3 + difficulty, 6);
+  const size = 52;
+  const w = game.clientWidth;
+  const h = game.clientHeight;
+
+  for (let i = 0; i < amount; i++) {
+    let pos;
+    let safe = false;
+    let attempts = 0;
+
+    while (!safe && attempts < 60) {
+      pos = safePos(w, h, size);
+      safe = memoryTargets.every(t => Math.hypot(t.x - pos.x, t.y - pos.y) > 75);
+      attempts++;
+    }
+
+    memoryTargets.push({ x: pos.x + size / 2, y: pos.y + size / 2 });
+
+    const marker = document.createElement('div');
+    marker.className = 'memory-marker';
+    marker.style.left = pos.x + 'px';
+    marker.style.top = pos.y + 'px';
+    game.appendChild(marker);
+  }
+
+  const hint = document.createElement('div');
+  hint.className = 'memory-hint';
+  hint.innerHTML = '<strong>Observa y memoriza las posiciones...</strong>';
+  game.appendChild(hint);
+
+  const showTime = Math.max(850, 1700 - difficulty * 150);
+
+  memoryTimeout = setTimeout(() => {
+    game.querySelectorAll('.memory-marker').forEach(el => el.remove());
+    const h = game.querySelector('.memory-hint');
+    if (h) h.innerHTML = '<strong>Ahora toca donde estaban los puntos.</strong>';
+    memoryShowing = false;
+    memoryChallengeStart = Date.now();
+  }, showTime);
+}
+
+game.addEventListener('pointerdown', (e) => {
+  if (!isPlaying || currentMode !== 'memoria' || memoryShowing) return;
+
+  const rect = game.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  const alreadySolved = new Set(memorySolved);
+  let bestIndex = -1;
+  let bestDistance = Infinity;
+
+  memoryTargets.forEach((target, index) => {
+    if (alreadySolved.has(index)) return;
+    const d = Math.hypot(target.x - x, target.y - y);
+    if (d < bestDistance) {
+      bestDistance = d;
+      bestIndex = index;
+    }
+  });
+
+  totalClicks++;
+
+  const tolerance = Math.max(34, 54 - difficulty * 3);
+
+  if (bestIndex >= 0 && bestDistance <= tolerance) {
+    hits++;
+    memorySolved.push(bestIndex);
+    reactionTimes.push(Date.now() - memoryChallengeStart);
+    updateStreak(true);
+
+    const click = document.createElement('div');
+    click.className = 'memory-click';
+    click.style.left = memoryTargets[bestIndex].x + 'px';
+    click.style.top = memoryTargets[bestIndex].y + 'px';
+    game.appendChild(click);
+
+    spawnParticles(memoryTargets[bestIndex].x, memoryTargets[bestIndex].y, 'var(--green)', 8);
+    spawnScorePopup(memoryTargets[bestIndex].x, memoryTargets[bestIndex].y - 12, '+1', 'var(--green)');
+
+    if (memorySolved.length === memoryTargets.length) {
+      setTimeout(startMemoryChallenge, 450);
+    }
+  } else {
+    misses++;
+    updateStreak(false);
+    spawnMissFlash(x, y);
+    spawnScorePopup(x, y - 10, '−1', 'var(--red)');
+  }
+
+  updateStats();
+});
+
+/* ─── STROOP MODE ─── */
+function spawnStroopChallenge() {
+  if (!isPlaying || currentMode !== 'stroop') return;
+
+  game.innerHTML = '<div id="streak-indicator">🔥 ×' + streak + '</div>';
+
+  const wordColor = STROOP_COLORS[Math.floor(Math.random() * STROOP_COLORS.length)];
+  let inkColor = STROOP_COLORS[Math.floor(Math.random() * STROOP_COLORS.length)];
+
+  if (difficulty >= 2) {
+    let guard = 0;
+    while (inkColor.key === wordColor.key && guard < 10) {
+      inkColor = STROOP_COLORS[Math.floor(Math.random() * STROOP_COLORS.length)];
+      guard++;
+    }
+  }
+
+  stroopCurrentColor = inkColor.key;
+  stroopStartTime = Date.now();
+
+  const card = document.createElement('div');
+  card.className = 'stroop-card';
+  card.innerHTML = `
+    <div class="stroop-help">Elige el <strong>COLOR REAL</strong> de la palabra, no lo que lees.</div>
+    <div class="stroop-word" style="color:${inkColor.value}">${wordColor.name}</div>
+    <div class="stroop-buttons">
+      ${STROOP_COLORS.map(color => `
+        <button class="stroop-btn" onclick="answerStroop('${color.key}')">${color.name}</button>
+      `).join('')}
+    </div>
+  `;
+  game.appendChild(card);
+}
+
+function answerStroop(answer) {
+  if (!isPlaying || currentMode !== 'stroop') return;
+
+  totalClicks++;
+  reactionTimes.push(Date.now() - stroopStartTime);
+
+  if (answer === stroopCurrentColor) {
+    hits++;
+    updateStreak(true);
+    spawnScorePopup(game.clientWidth / 2, game.clientHeight / 2 - 80, '+1', 'var(--green)');
+  } else {
+    misses++;
+    updateStreak(false);
+    spawnScorePopup(game.clientWidth / 2, game.clientHeight / 2 - 80, '−1', 'var(--red)');
+  }
+
+  updateStats();
+  setTimeout(spawnStroopChallenge, Math.max(250, 650 - difficulty * 60));
+}
+
 /* ─── End game ─── */
 function endGame() {
   isPlaying = false;
   clearInterval(tickInterval);
   cancelAnimationFrame(rafId);
   clearTimeout(reflexTimeout);
+  clearTimeout(memoryTimeout);
 
   game.removeEventListener('pointermove', onPointerMove);
   game.removeEventListener('touchmove', onTouchMove);
@@ -1380,6 +1683,17 @@ async function sendToGoogleSheets(row) {
   }
 }
 
+
+function getTaskType(mode) {
+  const map = {
+    reflejos: 'reaccion',
+    persecucion: 'coordinacion',
+    memoria: 'memoria_visual',
+    stroop: 'control_cognitivo'
+  };
+  return map[mode] || 'desconocida';
+}
+
 /* ─── Save round ─── */
 async function saveRound(realState) {
   const acc = totalClicks > 0 ? Math.round((hits / totalClicks) * 100) : 0;
@@ -1392,7 +1706,7 @@ async function saveRound(realState) {
     gamer_id: gamerId,
     ronda: round,
     modo: currentMode,
-    tipo_tarea: currentMode === 'reflejos' ? 'reaccion' : 'coordinacion',
+    tipo_tarea: getTaskType(currentMode),
     duracion_s: 20,
     aciertos: hits,
     errores: misses,
