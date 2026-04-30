@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeuroPlay V2</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #111118;
+  --surface2: #1a1a24;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.13);
+  --blue: #4fc3f7;
+  --blue-dim: rgba(79,195,247,0.15);
+  --red: #ff6b6b;
+  --red-dim: rgba(255,107,107,0.15);
+  --green: #69f0ae;
+  --green-dim: rgba(105,240,174,0.12);
+  --amber: #ffcc02;
+  --amber-dim: rgba(255,204,2,0.12);
+  --purple: #b39ddb;
+  --text: #e8e8f0;
+  --text2: #8888a0;
+  --text3: #555568;
+  --radius: 12px;
+  --radius-lg: 18px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Syne', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* grid bg */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(79,195,247,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79,195,247,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+header {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(10,10,15,0.8);
+  backdrop-filter: blur(12px);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--blue-dim);
+  border: 1px solid var(--blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.logo h1 {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.logo span { color: var(--blue); }
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  font-family: 'Space Mono', monospace;
+}
+
+.badge-blue { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(79,195,247,0.3); }
+.badge-green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(105,240,174,0.3); }
+.badge-amber { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(255,204,2,0.3); }
+.badge-red { background: var(--red-dim); color: var(--red); border: 1px solid rgba(255,107,107,0.3); }
+.badge-purple { background: rgba(179,157,219,0.15); color: var(--purple); border: 1px solid rgba(179,157,219,0.3); }
+
+/* Layout */
+.main-layout {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px 16px;
+  display: grid;
+  gap: 16px;
+}
+
+/* Mode selector */
+.mode-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.mode-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  user-select: none;
+}
+
+.mode-card:hover { border-color: var(--border2); background: var(--surface2); }
+.mode-card.active { border-color: var(--blue); background: var(--blue-dim); }
+.mode-card.active .mode-title { color: var(--blue); }
+
+.mode-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.mode-card.active .mode-icon { background: rgba(79,195,247,0.2); border-color: var(--blue); }
+
+.mode-info { flex: 1; }
+.mode-title { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+.mode-desc { font-size: 12px; color: var(--text2); line-height: 1.4; }
+
+/* Stats bar */
+.stats-bar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 20px;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+}
+
+.stat-item { text-align: center; }
+.stat-label { font-size: 10px; font-weight: 700; letter-spacing: 0.8px; color: var(--text3); text-transform: uppercase; font-family: 'Space Mono', monospace; margin-bottom: 4px; }
+.stat-value { font-size: 20px; font-weight: 800; font-family: 'Space Mono', monospace; line-height: 1; }
+.stat-value.blue { color: var(--blue); }
+.stat-value.green { color: var(--green); }
+.stat-value.red { color: var(--red); }
+.stat-value.amber { color: var(--amber); }
+.stat-value.purple { color: var(--purple); }
+
+/* Game area */
+#game-wrapper {
+  position: relative;
+}
+
+#game {
+  width: 100%;
+  height: 440px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  position: relative;
+  overflow: hidden;
+  cursor: crosshair;
+}
+
+/* Timer bar */
+#timer-bar-wrap {
+  width: 100%;
+  height: 4px;
+  background: var(--surface2);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+#timer-bar {
+  height: 100%;
+  background: var(--blue);
+  border-radius: 2px;
+  transition: width 0.9s linear, background 0.3s;
+  width: 100%;
+}
+
+#timer-bar.warning { background: var(--amber); }
+#timer-bar.danger { background: var(--red); }
+
+/* Overlay */
+#overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10,10,15,0.85);
+  border-radius: var(--radius-lg);
+  z-index: 50;
+  gap: 16px;
+}
+
+#overlay h2 { font-size: 28px; font-weight: 800; }
+#overlay p { color: var(--text2); font-size: 14px; max-width: 340px; text-align: center; line-height: 1.6; }
+
+.btn {
+  padding: 11px 24px;
+  border-radius: 10px;
+  border: 1px solid var(--border2);
+  cursor: pointer;
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  transition: all 0.15s;
+  letter-spacing: 0.3px;
+}
+
+.btn-primary { background: var(--blue); color: #050a10; border-color: var(--blue); }
+.btn-primary:hover { background: #81d4fa; border-color: #81d4fa; }
+.btn-secondary { background: transparent; color: var(--text); }
+.btn-secondary:hover { background: var(--surface2); }
+.btn-danger { background: transparent; color: var(--red); border-color: rgba(255,107,107,0.4); }
+.btn-danger:hover { background: var(--red-dim); }
+
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+
+/* Targets */
+.target {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  position: absolute;
+  cursor: pointer;
+  transform: scale(0);
+  animation: pop-in 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes pop-in {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}
+
+.target-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  position: relative;
+  transition: transform 0.1s;
+}
+
+.target:hover .target-inner { transform: scale(1.08); }
+
+.target-blue .target-inner {
+  background: radial-gradient(circle at 35% 35%, #81d4fa, var(--blue) 60%, #0288d1);
+  border: 2px solid rgba(79,195,247,0.6);
+}
+
+.target-red .target-inner {
+  background: radial-gradient(circle at 35% 35%, #ff8a80, var(--red) 60%, #c62828);
+  border: 2px solid rgba(255,107,107,0.6);
+}
+
+/* Shrink ring for reflex targets */
+.target-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid rgba(79,195,247,0.5);
+  animation: shrink-ring linear forwards;
+}
+
+@keyframes shrink-ring {
+  from { transform: scale(1.4); opacity: 0.8; }
+  to { transform: scale(1); opacity: 0; }
+}
+
+/* Player/Prey */
+.player-circle {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  position: absolute;
+  pointer-events: none;
+  background: radial-gradient(circle at 35% 35%, #81d4fa, var(--blue) 65%, #0288d1);
+  border: 2px solid rgba(79,195,247,0.8);
+  transition: left 0.05s, top 0.05s;
+}
+
+.prey-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  position: absolute;
+  pointer-events: none;
+  background: radial-gradient(circle at 35% 35%, #ff8a80, var(--red) 65%, #c62828);
+  border: 2px solid rgba(255,107,107,0.8);
+}
+
+/* Particle burst */
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: burst 0.5s ease-out forwards;
+}
+
+@keyframes burst {
+  from { transform: translate(0,0) scale(1); opacity: 1; }
+  to { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+}
+
+/* Hit flash */
+.hit-flash {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: hit-anim 0.35s ease-out forwards;
+}
+
+@keyframes hit-anim {
+  from { transform: scale(1); opacity: 0.9; }
+  to { transform: scale(2.2); opacity: 0; }
+}
+
+/* Miss flash */
+.miss-flash {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: var(--red-dim);
+  border: 1px solid var(--red);
+  animation: miss-anim 0.4s ease-out forwards;
+}
+
+@keyframes miss-anim {
+  from { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+  to { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+}
+
+/* Score popup */
+.score-popup {
+  position: absolute;
+  pointer-events: none;
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  font-size: 15px;
+  animation: score-float 0.8s ease-out forwards;
+  white-space: nowrap;
+  z-index: 20;
+}
+
+@keyframes score-float {
+  from { transform: translate(-50%, 0); opacity: 1; }
+  to { transform: translate(-50%, -50px); opacity: 0; }
+}
+
+/* Streak indicator */
+#streak-indicator {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  transition: all 0.2s;
+  z-index: 10;
+}
+
+#streak-indicator.hot {
+  background: rgba(255,204,2,0.15);
+  border-color: rgba(255,204,2,0.5);
+  color: var(--amber);
+}
+
+/* Instructions */
+.instructions {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.inst-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.inst-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+.inst-text { font-size: 13px; color: var(--text2); line-height: 1.5; }
+.inst-text strong { color: var(--text); font-weight: 600; }
+
+/* Feedback panel */
+#feedback-panel {
+  display: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  text-align: center;
+}
+
+#feedback-panel h3 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+#feedback-panel p { color: var(--text2); font-size: 13px; margin-bottom: 20px; }
+
+.round-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.summary-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  text-align: center;
+}
+
+.summary-label { font-size: 10px; color: var(--text3); font-family: 'Space Mono', monospace; letter-spacing: 0.6px; text-transform: uppercase; margin-bottom: 4px; }
+.summary-val { font-size: 22px; font-weight: 800; font-family: 'Space Mono', monospace; }
+
+.state-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.state-btn {
+  padding: 9px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.state-btn:hover { background: var(--blue-dim); border-color: var(--blue); color: var(--blue); }
+
+/* Dataset panel */
+.data-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.panel-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panel-title { font-size: 15px; font-weight: 700; }
+.panel-actions { display: flex; gap: 8px; }
+
+.data-table-wrap { overflow-x: auto; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  font-family: 'Space Mono', monospace;
+  min-width: 700px;
+}
+
+thead th {
+  background: var(--surface2);
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 10px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text3);
+  border-bottom: 1px solid var(--border);
+  font-weight: 700;
+}
+
+tbody td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text2);
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--surface2); }
+
+td.val-hit { color: var(--green); }
+td.val-miss { color: var(--red); }
+td.val-acc { color: var(--blue); }
+td.val-state { }
+
+.state-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.state-Enfoque { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(79,195,247,0.3); }
+.state-Relax { background: var(--green-dim); color: var(--green); border: 1px solid rgba(105,240,174,0.3); }
+.state-Frustracion { background: var(--red-dim); color: var(--red); border: 1px solid rgba(255,107,107,0.3); }
+.state-Cansancio { background: rgba(136,136,160,0.15); color: var(--text2); border: 1px solid var(--border2); }
+.state-Sobrecarga { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(255,204,2,0.3); }
+
+.empty-state {
+  padding: 40px;
+  text-align: center;
+  color: var(--text3);
+  font-size: 13px;
+}
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Difficulty bar */
+.diff-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.diff-pip {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  transition: all 0.3s;
+}
+
+.diff-pip.active { background: var(--blue); border-color: var(--blue); }
+.diff-pip.active.d3 { background: var(--amber); border-color: var(--amber); }
+.diff-pip.active.d4 { background: #ff9800; border-color: #ff9800; }
+.diff-pip.active.d5 { background: var(--red); border-color: var(--red); }
+
+/* predicted state */
+.predicted-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'Space Mono', monospace;
+}
+
+/* Combo ring on player */
+.combo-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid var(--amber);
+  animation: combo-pulse 0.6s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes combo-pulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+/* Chase crosshair */
+#game.chase-mode { cursor: none; }
+
+/* Responsive */
+@media (max-width: 600px) {
+  .stats-bar { grid-template-columns: repeat(3, 1fr); }
+  .mode-selector { grid-template-columns: 1fr; }
+  .round-summary { grid-template-columns: repeat(2, 1fr); }
+  .instructions { grid-template-columns: 1fr; }
+  header { padding: 14px 16px; }
+  .logo h1 { font-size: 16px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <h1>Neuro<span>Play</span></h1>
+  </div>
+  <div class="header-right">
+    <span class="badge badge-blue" id="diff-label">NIV 1</span>
+    <div class="diff-bar" id="diff-pips"></div>
+    <span class="badge badge-purple" id="round-badge">R1</span>
+  </div>
+</header>
+
+<div class="main-layout">
+
+  <!-- Mode selector -->
+  <div class="mode-selector">
+    <div class="mode-card active" id="card-reflejos" onclick="selectMode('reflejos')">
+      <div class="mode-icon">🔵</div>
+      <div class="mode-info">
+        <div class="mode-title">Modo Reflejos</div>
+        <div class="mode-desc">Pulsa los azules, evita los rojos. Mide tu velocidad de reacción.</div>
+      </div>
+    </div>
+    <div class="mode-card" id="card-persecucion" onclick="selectMode('persecucion')">
+      <div class="mode-icon">🏃</div>
+      <div class="mode-info">
+        <div class="mode-title">Modo Persecución</div>
+        <div class="mode-desc">Caza el círculo rojo con el ratón. La IA escapa con evasión adaptativa.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats bar -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <div class="stat-label">Tiempo</div>
+      <div class="stat-value blue" id="stat-time">20</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Aciertos</div>
+      <div class="stat-value green" id="stat-hits">0</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Errores</div>
+      <div class="stat-value red" id="stat-misses">0</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Precisión</div>
+      <div class="stat-value amber" id="stat-acc">—</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Reacción</div>
+      <div class="stat-value purple" id="stat-react">—</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Estado IA</div>
+      <div class="stat-value" id="stat-state" style="font-size:13px;padding-top:3px;">—</div>
+    </div>
+  </div>
+
+  <!-- Timer bar -->
+  <div id="timer-bar-wrap">
+    <div id="timer-bar"></div>
+  </div>
+
+  <!-- Game area -->
+  <div id="game-wrapper">
+    <div id="game">
+      <div id="streak-indicator">🔥 x0</div>
+      <div id="overlay">
+        <h2>¡Listo!</h2>
+        <p>Selecciona un modo arriba y pulsa para empezar.</p>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="startGame()">▶ Empezar ronda</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Instructions -->
+  <div class="instructions">
+    <div class="inst-item">
+      <div class="inst-dot" style="background:var(--blue)"></div>
+      <div class="inst-text"><strong>Reflejos:</strong> toca los círculos azules 🔵 antes de que desaparezcan. Ignora los rojos.</div>
+    </div>
+    <div class="inst-item">
+      <div class="inst-dot" style="background:var(--red)"></div>
+      <div class="inst-text"><strong>Persecución:</strong> mueve el ratón (o dedo) para atrapar el círculo rojo. Escapa de forma inteligente.</div>
+    </div>
+    <div class="inst-item">
+      <div class="inst-dot" style="background:var(--amber)"></div>
+      <div class="inst-text"><strong>Racha:</strong> acierta seguido para multiplicar tu puntuación. Una racha de ×3 aumenta la dificultad.</div>
+    </div>
+    <div class="inst-item">
+      <div class="inst-dot" style="background:var(--green)"></div>
+      <div class="inst-text"><strong>Adaptación:</strong> el sistema ajusta la dificultad según tu estado percibido al terminar la ronda.</div>
+    </div>
+  </div>
+
+  <!-- Feedback panel -->
+  <div id="feedback-panel">
+    <h3>⏱ Ronda completada</h3>
+    <p>Resumen de la ronda. ¿Cómo te has sentido?</p>
+    <div class="round-summary" id="round-summary"></div>
+    <div class="state-buttons">
+      <button class="state-btn" onclick="saveRound('Relax')">Relax 🧘</button>
+      <button class="state-btn" onclick="saveRound('Enfoque')">Enfoque 🎯</button>
+      <button class="state-btn" onclick="saveRound('Frustracion')">Frustración 😤</button>
+      <button class="state-btn" onclick="saveRound('Cansancio')">Cansancio 😴</button>
+      <button class="state-btn" onclick="saveRound('Sobrecarga')">Sobrecarga ⚡</button>
+    </div>
+  </div>
+
+  <!-- Dataset panel -->
+  <div class="data-panel">
+    <div class="panel-header">
+      <div class="panel-title">📊 Dataset</div>
+      <div class="panel-actions">
+        <button class="btn btn-secondary" style="padding:7px 14px;font-size:13px;" onclick="downloadCSV()">⬇ Exportar CSV</button>
+        <button class="btn btn-danger" style="padding:7px 14px;font-size:13px;" onclick="clearDataset()">🗑 Borrar</button>
+      </div>
+    </div>
+    <div class="data-table-wrap">
+      <div id="datasetTable"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ─── State ─── */
+const game = document.getElementById('game');
+let round = Number(localStorage.getItem('np_round')) || 1;
+let difficulty = Number(localStorage.getItem('np_diff')) || 1;
+let dataset = JSON.parse(localStorage.getItem('np_dataset') || '[]');
+let currentMode = 'reflejos';
+
+let hits = 0, misses = 0, totalClicks = 0;
+let time = 20;
+let reactionTimes = [];
+let isPlaying = false;
+let streak = 0;
+let score = 0;
+
+/* Reflex state */
+let reflexTimeout = null;
+let targetExpireMs = 2200;
+
+/* Chase state */
+let rafId = null;
+let playerPos = { x: 80, y: 200 };
+let preyPos = { x: 600, y: 200 };
+let preyVel = { x: -3, y: 1.5 };
+let playerEl = null, preyEl = null, comboRingEl = null;
+let lastCaptureTime = 0;
+let preyPhase = 0;
+
+/* Timer */
+let tickInterval = null;
+let roundStartTime = 0;
+
+/* ─── Difficulty pips ─── */
+function renderDiffPips() {
+  const pip = document.getElementById('diff-pips');
+  pip.innerHTML = '';
+  for (let i = 1; i <= 5; i++) {
+    const d = document.createElement('div');
+    d.className = 'diff-pip' + (i <= difficulty ? ` active d${i}` : '');
+    pip.appendChild(d);
+  }
+  document.getElementById('diff-label').textContent = `NIV ${difficulty}`;
+}
+
+/* ─── Mode selection ─── */
+function selectMode(mode) {
+  currentMode = mode;
+  document.getElementById('card-reflejos').classList.toggle('active', mode === 'reflejos');
+  document.getElementById('card-persecucion').classList.toggle('active', mode === 'persecucion');
+}
+
+/* ─── Utils ─── */
+function avg(arr) {
+  if (!arr.length) return 0;
+  return Math.round(arr.reduce((a, b) => a + b, 0) / arr.length);
+}
+
+function clamp(v, mn, mx) { return Math.max(mn, Math.min(mx, v)); }
+
+function rnd(min, max) { return min + Math.random() * (max - min); }
+
+function safePos(w, h, size) {
+  return {
+    x: rnd(12, w - size - 12),
+    y: rnd(12, h - size - 12)
+  };
+}
+
+/* ─── Stats ─── */
+function updateStats() {
+  const acc = totalClicks > 0 ? Math.round((hits / totalClicks) * 100) : null;
+  document.getElementById('stat-time').textContent = time;
+  document.getElementById('stat-hits').textContent = hits;
+  document.getElementById('stat-misses').textContent = misses;
+  document.getElementById('stat-acc').textContent = acc !== null ? acc + '%' : '—';
+  document.getElementById('stat-react').textContent = reactionTimes.length ? avg(reactionTimes) + 'ms' : '—';
+
+  const pState = predictState();
+  const stateEl = document.getElementById('stat-state');
+  stateEl.innerHTML = `<span class="state-pill state-${pState}">${pState}</span>`;
+
+  const pct = time / 20;
+  const tb = document.getElementById('timer-bar');
+  tb.style.width = (pct * 100) + '%';
+  tb.className = pct > 0.4 ? '' : (pct > 0.2 ? 'warning' : 'danger');
+
+  document.getElementById('round-badge').textContent = `R${round}`;
+  renderDiffPips();
+}
+
+/* ─── Streak ─── */
+function updateStreak(good) {
+  if (good) {
+    streak++;
+  } else {
+    streak = 0;
+  }
+  const el = document.getElementById('streak-indicator');
+  el.textContent = '🔥 ×' + streak;
+  el.className = streak >= 3 ? 'hot' : '';
+}
+
+/* ─── VFX ─── */
+function spawnParticles(x, y, color, count = 8) {
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const angle = (i / count) * Math.PI * 2;
+    const dist = 30 + Math.random() * 30;
+    p.style.cssText = `
+      left:${x}px; top:${y}px;
+      width:${4 + Math.random() * 4}px;
+      height:${4 + Math.random() * 4}px;
+      background:${color};
+      --tx:${Math.cos(angle) * dist}px;
+      --ty:${Math.sin(angle) * dist}px;
+      animation-duration:${0.4 + Math.random() * 0.3}s;
+    `;
+    game.appendChild(p);
+    setTimeout(() => p.remove(), 800);
+  }
+}
+
+function spawnHitFlash(x, y, size, color) {
+  const el = document.createElement('div');
+  el.className = 'hit-flash';
+  el.style.cssText = `
+    left:${x - size/2}px; top:${y - size/2}px;
+    width:${size}px; height:${size}px;
+    background:${color};
+    border-radius:50%;
+  `;
+  game.appendChild(el);
+  setTimeout(() => el.remove(), 400);
+}
+
+function spawnMissFlash(x, y) {
+  const el = document.createElement('div');
+  el.className = 'miss-flash';
+  el.style.cssText = `left:${x}px; top:${y}px;`;
+  game.appendChild(el);
+  setTimeout(() => el.remove(), 500);
+}
+
+function spawnScorePopup(x, y, text, color) {
+  const el = document.createElement('div');
+  el.className = 'score-popup';
+  el.style.cssText = `left:${x}px; top:${y}px; color:${color};`;
+  el.textContent = text;
+  game.appendChild(el);
+  setTimeout(() => el.remove(), 900);
+}
+
+/* ─── Start game ─── */
+function startGame() {
+  hits = 0; misses = 0; totalClicks = 0;
+  reactionTimes = []; streak = 0; score = 0;
+  time = 20;
+  isPlaying = true;
+  roundStartTime = Date.now();
+  lastCaptureTime = Date.now();
+
+  document.getElementById('overlay').style.display = 'none';
+  document.getElementById('feedback-panel').style.display = 'none';
+  game.innerHTML = '<div id="streak-indicator">🔥 ×0</div>';
+
+  clearInterval(tickInterval);
+  cancelAnimationFrame(rafId);
+  clearTimeout(reflexTimeout);
+
+  updateStats();
+  updateStreak(null);
+
+  if (currentMode === 'reflejos') {
+    game.className = '';
+    targetExpireMs = Math.max(900, 2200 - (difficulty - 1) * 280);
+    spawnReflexTargets();
+    tickInterval = setInterval(tick, 1000);
+  } else {
+    game.className = 'chase-mode';
+    initChase();
+    tickInterval = setInterval(tick, 1000);
+    chaseLoop();
+  }
+}
+
+/* ─── Tick (1s) ─── */
+function tick() {
+  time--;
+  updateStats();
+  if (time <= 0) endGame();
+}
+
+/* ─── REFLEX MODE ─── */
+function spawnReflexTargets() {
+  if (!isPlaying || currentMode !== 'reflejos') return;
+
+  // remove old targets
+  game.querySelectorAll('.target').forEach(t => t.remove());
+
+  const w = game.clientWidth;
+  const h = game.clientHeight;
+
+  // Blue target
+  spawnTarget(w, h, 'blue');
+
+  // Optionally add extra red distractors based on difficulty
+  const numRed = Math.min(difficulty, 3);
+  for (let i = 0; i < numRed; i++) spawnTarget(w, h, 'red');
+
+  // Auto-expire blue
+  reflexTimeout = setTimeout(() => {
+    if (!isPlaying) return;
+    // target expired = miss
+    misses++;
+    totalClicks++;
+    updateStreak(false);
+    updateStats();
+    spawnReflexTargets();
+  }, targetExpireMs);
+}
+
+function spawnTarget(w, h, type) {
+  const size = 58;
+  const pos = safePos(w, h, size);
+
+  const el = document.createElement('div');
+  el.className = `target target-${type}`;
+  el.style.left = pos.x + 'px';
+  el.style.top = pos.y + 'px';
+
+  const inner = document.createElement('div');
+  inner.className = 'target-inner';
+  el.appendChild(inner);
+
+  if (type === 'blue') {
+    const ring = document.createElement('div');
+    ring.className = 'target-ring';
+    ring.style.animationDuration = targetExpireMs + 'ms';
+    el.appendChild(ring);
+  }
+
+  el.addEventListener('pointerdown', (e) => {
+    e.stopPropagation();
+    if (!isPlaying) return;
+    handleTargetClick(type, pos.x + size/2, pos.y + size/2);
+  });
+
+  game.appendChild(el);
+}
+
+function handleTargetClick(type, cx, cy) {
+  if (type === 'blue') {
+    clearTimeout(reflexTimeout);
+    hits++;
+    totalClicks++;
+    const rt = Date.now() - roundStartTime - (20 - time) * 1000;
+    // better: track per-spawn
+    reactionTimes.push(Date.now() - _lastSpawnTime);
+    updateStreak(true);
+    const bonus = streak >= 3 ? ' ×' + streak + '!' : '+1';
+    spawnParticles(cx, cy, 'var(--blue)', 10);
+    spawnHitFlash(cx, cy, 58, 'rgba(79,195,247,0.3)');
+    spawnScorePopup(cx, cy - 10, bonus, streak >= 3 ? 'var(--amber)' : 'var(--green)');
+    updateStats();
+    spawnReflexTargets();
+  } else {
+    misses++;
+    totalClicks++;
+    updateStreak(false);
+    spawnParticles(cx, cy, 'var(--red)', 6);
+    spawnMissFlash(cx, cy);
+    spawnScorePopup(cx, cy - 10, '−1', 'var(--red)');
+    updateStats();
+  }
+}
+
+let _lastSpawnTime = Date.now();
+const _origSpawn = spawnReflexTargets;
+
+/* patch to track spawn time */
+function spawnReflexTargets() {
+  _lastSpawnTime = Date.now();
+  if (!isPlaying || currentMode !== 'reflejos') return;
+  game.querySelectorAll('.target').forEach(t => t.remove());
+  clearTimeout(reflexTimeout);
+  const w = game.clientWidth, h = game.clientHeight;
+  spawnTarget(w, h, 'blue');
+  const numRed = Math.min(difficulty, 3);
+  for (let i = 0; i < numRed; i++) spawnTarget(w, h, 'red');
+  reflexTimeout = setTimeout(() => {
+    if (!isPlaying) return;
+    misses++;
+    totalClicks++;
+    updateStreak(false);
+    updateStats();
+    spawnReflexTargets();
+  }, targetExpireMs);
+}
+
+/* miss click on game background */
+game.addEventListener('pointerdown', (e) => {
+  if (!isPlaying || currentMode !== 'reflejos') return;
+  if (e.target !== game && e.target.id !== 'streak-indicator') return;
+  misses++;
+  totalClicks++;
+  updateStreak(false);
+  spawnMissFlash(e.offsetX, e.offsetY);
+  spawnScorePopup(e.offsetX, e.offsetY - 10, '−1', 'var(--red)');
+  updateStats();
+});
+
+/* ─── CHASE MODE ─── */
+function initChase() {
+  const w = game.clientWidth, h = game.clientHeight;
+  playerPos = { x: 60, y: h / 2 - 25 };
+  preyPos = { x: w - 100, y: h / 2 - 22 };
+  preyVel = { x: -2 - difficulty, y: 1 };
+  preyPhase = 0;
+
+  playerEl = document.createElement('div');
+  playerEl.className = 'player-circle';
+
+  preyEl = document.createElement('div');
+  preyEl.className = 'prey-circle';
+
+  game.appendChild(playerEl);
+  game.appendChild(preyEl);
+
+  renderChase();
+
+  game.addEventListener('pointermove', onPointerMove);
+  game.addEventListener('touchmove', onTouchMove, { passive: false });
+}
+
+function onPointerMove(e) {
+  if (!isPlaying || currentMode !== 'persecucion') return;
+  const rect = game.getBoundingClientRect();
+  playerPos.x = clamp(e.clientX - rect.left - 25, 0, game.clientWidth - 50);
+  playerPos.y = clamp(e.clientY - rect.top - 25, 0, game.clientHeight - 50);
+}
+
+function onTouchMove(e) {
+  e.preventDefault();
+  if (!isPlaying || currentMode !== 'persecucion') return;
+  const rect = game.getBoundingClientRect();
+  const t = e.touches[0];
+  playerPos.x = clamp(t.clientX - rect.left - 25, 0, game.clientWidth - 50);
+  playerPos.y = clamp(t.clientY - rect.top - 25, 0, game.clientHeight - 50);
+}
+
+function chaseLoop() {
+  if (!isPlaying || currentMode !== 'persecucion') return;
+  updatePrey();
+  checkCapture();
+  renderChase();
+  rafId = requestAnimationFrame(chaseLoop);
+}
+
+function updatePrey() {
+  const w = game.clientWidth, h = game.clientHeight;
+  preyPhase += 0.04;
+
+  const px = playerPos.x + 25, py = playerPos.y + 25;
+  const ex = preyPos.x + 22, ey = preyPos.y + 22;
+
+  let dx = ex - px, dy = ey - py;
+  const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+
+  const speed = 2.5 + difficulty * 0.7;
+  const reactDist = 160 + difficulty * 20;
+
+  if (dist < reactDist) {
+    // Flee: move away + add perpendicular evasion
+    const perpX = -dy / dist;
+    const perpY = dx / dist;
+    const evasion = Math.sin(preyPhase * 3) * (1 + difficulty * 0.3);
+
+    preyVel.x += (dx / dist) * speed * 0.15 + perpX * evasion;
+    preyVel.y += (dy / dist) * speed * 0.15 + perpY * evasion;
+  } else {
+    // Wander
+    preyVel.x += Math.sin(preyPhase) * 0.4;
+    preyVel.y += Math.cos(preyPhase * 1.3) * 0.4;
+  }
+
+  // damping
+  const damping = 0.88;
+  preyVel.x *= damping;
+  preyVel.y *= damping;
+
+  // max speed
+  const maxSpeed = speed;
+  const vMag = Math.sqrt(preyVel.x**2 + preyVel.y**2);
+  if (vMag > maxSpeed) {
+    preyVel.x = (preyVel.x / vMag) * maxSpeed;
+    preyVel.y = (preyVel.y / vMag) * maxSpeed;
+  }
+
+  preyPos.x = clamp(preyPos.x + preyVel.x, 0, w - 44);
+  preyPos.y = clamp(preyPos.y + preyVel.y, 0, h - 44);
+
+  // bounce off walls
+  if (preyPos.x <= 0 || preyPos.x >= w - 44) preyVel.x *= -0.7;
+  if (preyPos.y <= 0 || preyPos.y >= h - 44) preyVel.y *= -0.7;
+}
+
+function checkCapture() {
+  const px = playerPos.x + 25, py = playerPos.y + 25;
+  const ex = preyPos.x + 22, ey = preyPos.y + 22;
+  const dist = Math.sqrt((px-ex)**2 + (py-ey)**2);
+
+  if (dist < 40) {
+    hits++;
+    totalClicks++;
+    reactionTimes.push(Date.now() - lastCaptureTime);
+    lastCaptureTime = Date.now();
+    updateStreak(true);
+
+    spawnParticles(ex, ey, 'var(--red)', 12);
+    spawnHitFlash(ex, ey, 50, 'rgba(255,107,107,0.25)');
+    const bonus = streak >= 3 ? '+' + streak + '🔥' : '+1';
+    spawnScorePopup(ex, ey - 15, bonus, streak >= 3 ? 'var(--amber)' : 'var(--green)');
+
+    // reposition prey far from player
+    const w = game.clientWidth, h = game.clientHeight;
+    let nx, ny;
+    do {
+      nx = rnd(20, w - 64);
+      ny = rnd(20, h - 64);
+    } while (Math.sqrt((nx+22-px)**2 + (ny+22-py)**2) < 180);
+    preyPos = { x: nx, y: ny };
+    preyVel = { x: rnd(-2, 2), y: rnd(-2, 2) };
+
+    updateStats();
+  }
+}
+
+function renderChase() {
+  if (!playerEl || !preyEl) return;
+  playerEl.style.left = playerPos.x + 'px';
+  playerEl.style.top = playerPos.y + 'px';
+  preyEl.style.left = preyPos.x + 'px';
+  preyEl.style.top = preyPos.y + 'px';
+}
+
+/* ─── End game ─── */
+function endGame() {
+  isPlaying = false;
+  clearInterval(tickInterval);
+  cancelAnimationFrame(rafId);
+  clearTimeout(reflexTimeout);
+
+  game.removeEventListener('pointermove', onPointerMove);
+  game.removeEventListener('touchmove', onTouchMove);
+  game.className = '';
+
+  playerEl = null; preyEl = null;
+
+  showFeedback();
+}
+
+function showFeedback() {
+  const acc = totalClicks > 0 ? Math.round((hits / totalClicks) * 100) : 0;
+  const react = avg(reactionTimes);
+  const pState = predictState();
+
+  const summary = document.getElementById('round-summary');
+  summary.innerHTML = `
+    <div class="summary-card">
+      <div class="summary-label">Aciertos</div>
+      <div class="summary-val" style="color:var(--green)">${hits}</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Errores</div>
+      <div class="summary-val" style="color:var(--red)">${misses}</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Precisión</div>
+      <div class="summary-val" style="color:var(--blue)">${acc}%</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Reacción</div>
+      <div class="summary-val" style="color:var(--purple)">${react > 0 ? react + 'ms' : '—'}</div>
+    </div>
+  `;
+
+  document.getElementById('feedback-panel').style.display = 'block';
+  document.getElementById('feedback-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+/* ─── Predict state ─── */
+function predictState() {
+  const acc = totalClicks > 0 ? hits / totalClicks : 0;
+  const react = avg(reactionTimes);
+
+  if (acc > 0.72 && react > 0 && react < 1600 && hits >= 3) return 'Enfoque';
+  if (currentMode === 'reflejos' && misses > hits + 2) return 'Frustracion';
+  if (react > 3500 || (hits === 0 && time < 10)) return 'Cansancio';
+  if (totalClicks > 60 && acc < 0.3) return 'Sobrecarga';
+  return 'Relax';
+}
+
+/* ─── Save round ─── */
+function saveRound(realState) {
+  const acc = totalClicks > 0 ? Math.round((hits / totalClicks) * 100) : 0;
+  const react = avg(reactionTimes);
+  const predicted = predictState();
+
+  const row = {
+    fecha: new Date().toISOString().slice(0, 19).replace('T', ' '),
+    ronda: round,
+    modo: currentMode,
+    duracion_s: 20,
+    aciertos: hits,
+    errores: misses,
+    interacciones: totalClicks,
+    precision_pct: acc,
+    reaccion_ms: react,
+    dificultad: difficulty,
+    estado_predicho: predicted,
+    estado_real: realState
+  };
+
+  dataset.push(row);
+  localStorage.setItem('np_dataset', JSON.stringify(dataset));
+  adaptDifficulty(realState);
+
+  round++;
+  localStorage.setItem('np_round', round);
+
+  document.getElementById('feedback-panel').style.display = 'none';
+  renderDataset();
+  updateStats();
+
+  // Show overlay ready for next round
+  const ov = document.getElementById('overlay') || document.createElement('div');
+  ov.id = 'overlay';
+  ov.style.display = 'flex';
+  ov.innerHTML = `
+    <h2>Ronda ${round - 1} guardada ✓</h2>
+    <p>Estado: <strong>${realState}</strong> · Predicho: <strong>${predictState()}</strong><br>Dificultad ajustada a nivel ${difficulty}</p>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="startGame()">▶ Ronda ${round}</button>
+    </div>
+  `;
+  game.innerHTML = '';
+  game.appendChild(ov);
+}
+
+/* ─── Adapt difficulty ─── */
+function adaptDifficulty(state) {
+  if (state === 'Enfoque') difficulty = Math.min(5, difficulty + 1);
+  if (['Frustracion', 'Cansancio', 'Sobrecarga'].includes(state)) difficulty = Math.max(1, difficulty - 1);
+  localStorage.setItem('np_diff', difficulty);
+  renderDiffPips();
+}
+
+/* ─── Dataset ─── */
+function renderDataset() {
+  const container = document.getElementById('datasetTable');
+  if (!dataset.length) {
+    container.innerHTML = '<div class="empty-state">No hay datos todavía. Completa una ronda para empezar.</div>';
+    return;
+  }
+
+  const headers = Object.keys(dataset[0]);
+  const labelMap = {
+    fecha: 'Fecha', ronda: 'Ronda', modo: 'Modo', duracion_s: 'Dur.s',
+    aciertos: 'Aciert.', errores: 'Errores', interacciones: 'Interact.',
+    precision_pct: 'Prec.%', reaccion_ms: 'React.ms', dificultad: 'Dif.',
+    estado_predicho: 'Predicho', estado_real: 'Real'
+  };
+
+  let html = '<table><thead><tr>';
+  headers.forEach(k => { html += `<th>${labelMap[k] || k}</th>`; });
+  html += '</tr></thead><tbody>';
+
+  dataset.slice().reverse().slice(0, 10).forEach(row => {
+    html += '<tr>';
+    headers.forEach(k => {
+      let val = row[k];
+      let cls = '';
+      if (k === 'aciertos') cls = 'val-hit';
+      else if (k === 'errores') cls = 'val-miss';
+      else if (k === 'precision_pct') { cls = 'val-acc'; val = val + '%'; }
+      else if (k === 'estado_predicho' || k === 'estado_real') {
+        val = `<span class="state-pill state-${val}">${val}</span>`;
+      }
+      html += `<td class="${cls}">${val}</td>`;
+    });
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+function downloadCSV() {
+  if (!dataset.length) { alert('Sin datos todavía.'); return; }
+  const headers = Object.keys(dataset[0]);
+  const rows = dataset.map(r => headers.map(h => `"${String(r[h]).replace(/"/g,'""')}"`).join(','));
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'neuroplay_dataset.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function clearDataset() {
+  if (!confirm('¿Borrar todo el dataset local?')) return;
+  dataset = []; round = 1; difficulty = 1;
+  localStorage.removeItem('np_dataset');
+  localStorage.setItem('np_round', 1);
+  localStorage.setItem('np_diff', 1);
+  renderDataset(); updateStats(); renderDiffPips();
+}
+
+/* ─── Init ─── */
+renderDataset();
+updateStats();
+renderDiffPips();
+</script>
+</body>
+</html>
