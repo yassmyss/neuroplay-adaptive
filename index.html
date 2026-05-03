@@ -204,6 +204,7 @@ header {
 #game {
   width: 100%;
   height: 440px;
+  touch-action: none;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -744,13 +745,574 @@ td.val-state { }
   header { padding: 14px 16px; }
   .logo h1 { font-size: 16px; }
 }
+
+/* NeuroPlay brand logo + animated intro */
+.logo-icon {
+  background: none !important;
+  border: none !important;
+  overflow: visible;
+}
+
+.neuro-mini {
+  width: 40px;
+  height: 40px;
+  display: block;
+  filter: drop-shadow(0 0 7px rgba(45,252,255,0.65));
+  animation: logoPulse 2.5s ease-in-out infinite;
+}
+
+.neuro-mini .mini-rim {
+  animation: logoRimPulse 3s ease-in-out infinite;
+}
+
+.neuro-mini .mini-node {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: logoNodePulse 1.7s ease-in-out infinite;
+}
+
+.neuro-mini .mini-node:nth-of-type(2) { animation-delay: .2s; }
+.neuro-mini .mini-node:nth-of-type(3) { animation-delay: .4s; }
+
+@keyframes logoPulse {
+  0%,100% { transform: scale(1); opacity: .92; }
+  50% { transform: scale(1.08); opacity: 1; }
+}
+
+@keyframes logoRimPulse {
+  0%,100% { filter: drop-shadow(0 0 2px #38dfff); opacity: .82; }
+  50% { filter: drop-shadow(0 0 9px #5efcff); opacity: 1; }
+}
+
+@keyframes logoNodePulse {
+  0%,100% { transform: scale(1); opacity: .85; }
+  50% { transform: scale(1.32); opacity: 1; }
+}
+
+#intro-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(45,252,255,.13), transparent 32%),
+    #070b18;
+  display: grid;
+  place-items: center;
+  animation: fadeOutIntro .8s ease forwards;
+  animation-delay: 2.8s;
+}
+
+.intro-card {
+  display: grid;
+  place-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.neuro-intro-icon {
+  width: min(240px, 58vw);
+  height: auto;
+  display: block;
+}
+
+.neuro-intro-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  letter-spacing: .08em;
+  color: var(--text);
+  text-transform: uppercase;
+  font-size: clamp(15px, 3vw, 22px);
+}
+
+.neuro-intro-subtitle {
+  font-family: 'Space Mono', monospace;
+  color: var(--blue);
+  font-size: 12px;
+  opacity: .82;
+}
+
+.neuro-intro-icon .rim {
+  animation: rimPulse 3.4s ease-in-out infinite;
+}
+
+.neuro-intro-icon .brain-line {
+  stroke-dasharray: 12 10;
+  animation: organicFlow 5s linear infinite;
+}
+
+.neuro-intro-icon .circuit-line {
+  stroke-dasharray: 140;
+  stroke-dashoffset: 140;
+  animation: circuitDraw 2.8s ease-in-out infinite;
+}
+
+.neuro-intro-icon .node {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: nodePulse 1.8s ease-in-out infinite;
+}
+
+.neuro-intro-icon .node:nth-of-type(2) { animation-delay: .2s; }
+.neuro-intro-icon .node:nth-of-type(3) { animation-delay: .4s; }
+.neuro-intro-icon .node:nth-of-type(4) { animation-delay: .6s; }
+.neuro-intro-icon .node:nth-of-type(5) { animation-delay: .8s; }
+
+.neuro-intro-icon .core {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: corePulse 2s ease-in-out infinite;
+}
+
+@keyframes rimPulse {
+  0%, 100% { opacity: .75; filter: drop-shadow(0 0 2px #38dfff); }
+  50% { opacity: 1; filter: drop-shadow(0 0 10px #5efcff); }
+}
+
+@keyframes organicFlow {
+  to { stroke-dashoffset: -90; }
+}
+
+@keyframes circuitDraw {
+  0% { stroke-dashoffset: 140; opacity: .35; }
+  45%, 70% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: -140; opacity: .45; }
+}
+
+@keyframes nodePulse {
+  0%, 100% { transform: scale(1); opacity: .85; }
+  50% { transform: scale(1.35); opacity: 1; }
+}
+
+@keyframes corePulse {
+  0%, 100% { transform: scale(1); opacity: .85; }
+  50% { transform: scale(1.45); opacity: 1; }
+}
+
+@keyframes fadeOutIntro {
+  to {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+.neuro-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2dfcff;
+  box-shadow: 0 0 8px #2dfcff;
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+@media (max-width: 600px) {
+  .neuro-mini {
+    width: 34px;
+    height: 34px;
+  }
+
+  .neuro-intro-icon {
+    width: min(190px, 62vw);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #intro-screen,
+  .neuro-mini,
+  .neuro-mini .mini-rim,
+  .neuro-mini .mini-node,
+  .neuro-intro-icon .rim,
+  .neuro-intro-icon .brain-line,
+  .neuro-intro-icon .circuit-line,
+  .neuro-intro-icon .node,
+  .neuro-intro-icon .core {
+    animation: none !important;
+  }
+
+  #intro-screen {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+
+  /* HUD más limpio */
+  .stats-bar {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+
+  .stat-value {
+    font-size: 16px;
+  }
+
+  /* Área juego */
+  #game {
+    height: 65vh;
+  }
+
+  /* Targets más grandes (clave) */
+  .target {
+    width: 64px;
+    height: 64px;
+  }
+
+  .player-circle {
+    width: 56px;
+    height: 56px;
+  }
+
+  .prey-circle {
+    width: 50px;
+    height: 50px;
+  }
+
+  /* Botones táctiles mejores */
+  .btn,
+  .state-btn {
+    width: 100%;
+    font-size: 15px;
+    padding: 14px;
+  }
+
+  /* Iconos más grandes */
+  .mode-icon svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  /* Menos agresividad animación */
+  .mode-card.active .tech-mode-icon {
+    animation-duration: 2.4s;
+  }
+
+}
+
+
+
+
+/* Safe tech SVG icons for game modes */
+.mode-icon {
+  overflow: visible;
+}
+
+.mode-icon svg.tech-mode-icon {
+  width: 30px;
+  height: 30px;
+  display: block;
+  overflow: visible;
+  filter: drop-shadow(0 0 5px rgba(45,252,255,.45));
+  transition: transform .22s ease, filter .22s ease;
+}
+
+.mode-card:hover .mode-icon svg.tech-mode-icon {
+  transform: scale(1.12) rotate(-2deg);
+  filter: drop-shadow(0 0 10px rgba(45,252,255,.85));
+}
+
+.mode-card.active .mode-icon svg.tech-mode-icon {
+  animation: techIconPulse 1.8s ease-in-out infinite;
+  filter:
+    drop-shadow(0 0 8px rgba(45,252,255,.85))
+    drop-shadow(0 0 14px rgba(255,79,216,.28));
+}
+
+.tech-mode-icon .hud-ring {
+  transform-origin: 32px 32px;
+  animation: hudRotate 5.8s linear infinite;
+}
+
+.tech-mode-icon .hud-ring.reverse {
+  animation-direction: reverse;
+  animation-duration: 7s;
+}
+
+.tech-mode-icon .signal-line {
+  stroke-dasharray: 18 12;
+  animation: signalFlow 3.2s linear infinite;
+}
+
+.tech-mode-icon .circuit-line {
+  stroke-dasharray: 70;
+  stroke-dashoffset: 70;
+  animation: circuitFlow 2.4s ease-in-out infinite;
+}
+
+.tech-mode-icon .pulse-node {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: techNodePulse 1.6s ease-in-out infinite;
+}
+
+.tech-mode-icon .scan-line {
+  animation: scanMove 1.9s ease-in-out infinite;
+}
+
+body.diff-high .mode-card.active .tech-mode-icon {
+  filter:
+    drop-shadow(0 0 9px rgba(255,204,2,.8))
+    drop-shadow(0 0 14px rgba(45,252,255,.55));
+}
+
+body.diff-max .mode-card.active .tech-mode-icon {
+  animation: techIconPulseFast .9s ease-in-out infinite;
+  filter:
+    drop-shadow(0 0 10px rgba(255,107,107,.85))
+    drop-shadow(0 0 18px rgba(255,204,2,.55));
+}
+
+@keyframes techIconPulse {
+  0%,100% { transform: scale(1); opacity: .92; }
+  50% { transform: scale(1.08); opacity: 1; }
+}
+
+@keyframes techIconPulseFast {
+  0%,100% { transform: scale(1) rotate(0deg); opacity: .94; }
+  50% { transform: scale(1.15) rotate(2deg); opacity: 1; }
+}
+
+@keyframes hudRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes signalFlow {
+  to { stroke-dashoffset: -90; }
+}
+
+@keyframes circuitFlow {
+  0% { stroke-dashoffset: 70; opacity: .35; }
+  45%,70% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: -70; opacity: .5; }
+}
+
+@keyframes techNodePulse {
+  0%,100% { transform: scale(1); opacity: .82; }
+  50% { transform: scale(1.38); opacity: 1; }
+}
+
+@keyframes scanMove {
+  0%,100% { transform: translateY(-5px); opacity: .25; }
+  50% { transform: translateY(5px); opacity: .9; }
+}
+
+@media (max-width: 600px) {
+  .mode-icon svg.tech-mode-icon {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mode-icon svg.tech-mode-icon,
+  .tech-mode-icon .hud-ring,
+  .tech-mode-icon .signal-line,
+  .tech-mode-icon .circuit-line,
+  .tech-mode-icon .pulse-node,
+  .tech-mode-icon .scan-line {
+    animation: none !important;
+  }
+}
+
+
+/* Focus mode: hide selection UI while playing */
+body.playing-focus header,
+body.playing-focus .mode-selector,
+body.playing-focus .instructions {
+  display: none;
+}
+
+body.playing-focus .main-layout {
+  max-width: 100%;
+  padding: 0;
+  gap: 0;
+}
+
+body.playing-focus .stats-bar {
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+body.playing-focus #timer-bar-wrap {
+  margin-bottom: 0;
+  border-radius: 0;
+}
+
+body.playing-focus #game-wrapper {
+  width: 100%;
+}
+
+body.playing-focus #game {
+  height: calc(100svh - 92px);
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+}
+
+body.round-ended .mode-selector,
+body.round-ended .instructions {
+  display: grid;
+}
+
+body.round-ended header {
+  display: flex;
+}
+
+body.round-ended .main-layout {
+  max-width: 1100px;
+  padding: 20px 16px;
+  gap: 16px;
+}
+
+body.round-ended #game {
+  height: 440px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+}
+
+@media (max-width: 768px) {
+  body.playing-focus .stats-bar {
+    grid-template-columns: repeat(3, 1fr);
+    padding: 8px;
+  }
+
+  body.playing-focus #game {
+    height: calc(100svh - 118px);
+    min-height: 420px;
+  }
+
+  body.round-ended .main-layout {
+    padding: 14px 10px 24px;
+  }
+
+  body.round-ended #game {
+    height: min(62svh, 430px);
+    min-height: 360px;
+    border-radius: 14px;
+  }
+}
+
+@media (max-width: 430px) {
+  body.playing-focus .stats-bar {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  body.playing-focus #game {
+    height: calc(100svh - 166px);
+    min-height: 360px;
+  }
+}
+
 </style>
 </head>
 <body>
 
+<div id="intro-screen" aria-hidden="true">
+  <div class="intro-card">
+    <svg class="neuro-intro-icon" viewBox="0 0 512 512" role="img" aria-label="Icono neurocognitivo animado" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="introBg" x1="64" y1="64" x2="448" y2="448" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#151039"/>
+      <stop offset="1" stop-color="#031a3f"/>
+    </linearGradient>
+    <linearGradient id="introRim" x1="70" y1="70" x2="442" y2="442" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ff4fd8"/>
+      <stop offset=".45" stop-color="#6a70ff"/>
+      <stop offset="1" stop-color="#2dfcff"/>
+    </linearGradient>
+    <linearGradient id="introBrainStroke" x1="150" y1="120" x2="255" y2="390" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ff5ee7"/>
+      <stop offset=".55" stop-color="#8d68ff"/>
+      <stop offset="1" stop-color="#2fcfff"/>
+    </linearGradient>
+    <linearGradient id="introCircuitStroke" x1="260" y1="120" x2="392" y2="390" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#83f7ff"/>
+      <stop offset="1" stop-color="#26b9ff"/>
+    </linearGradient>
+    <filter id="introSoftGlow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect x="42" y="42" width="428" height="428" rx="86" fill="url(#introBg)"/>
+  <rect class="rim" x="42" y="42" width="428" height="428" rx="86" fill="none" stroke="url(#introRim)" stroke-width="8" filter="url(#introSoftGlow)"/>
+
+  <path d="M248 114 C208 112 190 134 186 158 C157 158 142 181 146 208 C116 222 111 257 131 279 C112 302 119 337 149 350 C151 384 178 403 213 392 C221 421 248 426 252 399 Z" fill="none" stroke="url(#introBrainStroke)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" filter="url(#introSoftGlow)"/>
+  <path class="brain-line" d="M187 166 C166 184 184 204 209 195 M162 237 C194 214 224 227 224 265 M183 302 C205 326 232 315 232 285 M213 147 C241 163 227 188 203 186 M220 238 C236 210 260 214 271 241 M202 354 C223 362 241 350 252 366" fill="none" stroke="url(#introBrainStroke)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <path d="M264 114 C304 112 322 134 326 158 C355 158 370 181 366 208 C396 222 401 257 381 279 C400 302 393 337 363 350 C361 384 334 403 299 392 C291 421 264 426 260 399 Z" fill="none" stroke="url(#introCircuitStroke)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" filter="url(#introSoftGlow)"/>
+  <path class="circuit-line" d="M276 164 L306 134 M276 210 L317 169 L317 139 M276 252 L345 252 L373 224 M276 291 L330 291 L358 319 M276 333 L314 371 L314 398" fill="none" stroke="url(#introCircuitStroke)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <path class="circuit-line" d="M276 228 L334 170 M276 270 L345 270 L383 270 M276 315 L338 315" fill="none" stroke="url(#introCircuitStroke)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:.45s"/>
+
+  <g fill="#8bfaff" filter="url(#introSoftGlow)">
+    <circle class="node" cx="306" cy="134" r="8"/>
+    <circle class="node" cx="317" cy="139" r="6"/>
+    <circle class="node" cx="373" cy="224" r="8"/>
+    <circle class="node" cx="383" cy="270" r="8"/>
+    <circle class="node" cx="314" cy="398" r="8"/>
+  </g>
+
+  <line x1="256" y1="116" x2="256" y2="398" stroke="#79f7ff" stroke-width="10" stroke-linecap="round" filter="url(#introSoftGlow)"/>
+  <circle class="core" cx="256" cy="256" r="9" fill="#fff" filter="url(#introSoftGlow)"/>
+</svg>
+    <div>
+      <div class="neuro-intro-title">NeuroPlay Adaptive</div>
+      <div class="neuro-intro-subtitle">Inicializando sistema cognitivo...</div>
+    </div>
+  </div>
+</div>
+
+
 <header>
   <div class="logo">
-    <div class="logo-icon">⚡</div>
+    <div class="logo-icon">
+    <svg class="neuro-mini" viewBox="0 0 512 512" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="miniBg" x1="64" y1="64" x2="448" y2="448" gradientUnits="userSpaceOnUse">
+          <stop stop-color="#151039"/>
+          <stop offset="1" stop-color="#031a3f"/>
+        </linearGradient>
+        <linearGradient id="miniRim" x1="70" y1="70" x2="442" y2="442" gradientUnits="userSpaceOnUse">
+          <stop stop-color="#ff4fd8"/>
+          <stop offset=".45" stop-color="#6a70ff"/>
+          <stop offset="1" stop-color="#2dfcff"/>
+        </linearGradient>
+        <linearGradient id="miniBrain" x1="150" y1="120" x2="255" y2="390" gradientUnits="userSpaceOnUse">
+          <stop stop-color="#ff5ee7"/>
+          <stop offset=".55" stop-color="#8d68ff"/>
+          <stop offset="1" stop-color="#2fcfff"/>
+        </linearGradient>
+        <linearGradient id="miniCircuit" x1="260" y1="120" x2="392" y2="390" gradientUnits="userSpaceOnUse">
+          <stop stop-color="#83f7ff"/>
+          <stop offset="1" stop-color="#26b9ff"/>
+        </linearGradient>
+      </defs>
+      <rect x="42" y="42" width="428" height="428" rx="86" fill="url(#miniBg)"/>
+      <rect class="mini-rim" x="42" y="42" width="428" height="428" rx="86" fill="none" stroke="url(#miniRim)" stroke-width="13"/>
+      <path d="M248 114 C208 112 190 134 186 158 C157 158 142 181 146 208 C116 222 111 257 131 279 C112 302 119 337 149 350 C151 384 178 403 213 392 C221 421 248 426 252 399 Z" fill="none" stroke="url(#miniBrain)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M187 166 C166 184 184 204 209 195 M162 237 C194 214 224 227 224 265 M183 302 C205 326 232 315 232 285" fill="none" stroke="url(#miniBrain)" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M264 114 C304 112 322 134 326 158 C355 158 370 181 366 208 C396 222 401 257 381 279 C400 302 393 337 363 350 C361 384 334 403 299 392 C291 421 264 426 260 399 Z" fill="none" stroke="url(#miniCircuit)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M276 164 L306 134 M276 252 L345 252 L373 224 M276 291 L330 291 L358 319 M276 333 L314 371 L314 398" fill="none" stroke="url(#miniCircuit)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+      <g fill="#8bfaff">
+        <circle class="mini-node" cx="306" cy="134" r="13"/>
+        <circle class="mini-node" cx="373" cy="224" r="13"/>
+        <circle class="mini-node" cx="314" cy="398" r="13"/>
+      </g>
+      <line x1="256" y1="116" x2="256" y2="398" stroke="#79f7ff" stroke-width="18" stroke-linecap="round"/>
+      <circle cx="256" cy="256" r="11" fill="#fff"/>
+    </svg>
+  </div>
     <h1>Neuro<span>Play</span></h1>
   </div>
   <div class="header-right">
@@ -765,28 +1327,93 @@ td.val-state { }
   <!-- Mode selector -->
   <div class="mode-selector">
     <div class="mode-card active" id="card-reflejos" onclick="selectMode('reflejos')">
-      <div class="mode-icon">🔵</div>
+      <div class="mode-icon">
+        <svg class="tech-mode-icon" viewBox="0 0 64 64" aria-hidden="true">
+          <defs>
+            <linearGradient id="reflexGrad" x1="10" y1="10" x2="54" y2="54">
+              <stop stop-color="#ff4fd8"/>
+              <stop offset=".45" stop-color="#6a70ff"/>
+              <stop offset="1" stop-color="#2dfcff"/>
+            </linearGradient>
+          </defs>
+          <circle class="hud-ring" cx="32" cy="32" r="24" fill="none" stroke="url(#reflexGrad)" stroke-width="2.5" stroke-dasharray="7 5"/>
+          <circle cx="32" cy="32" r="13" fill="none" stroke="#79f7ff" stroke-width="3"/>
+          <path d="M32 5v10M32 49v10M5 32h10M49 32h10" stroke="#2dfcff" stroke-width="3" stroke-linecap="round"/>
+          <path class="signal-line" d="M15 17 L25 27 M49 17 L39 27 M15 47 L25 37 M49 47 L39 37" stroke="#ff5ee7" stroke-width="2.5" stroke-linecap="round"/>
+          <circle class="pulse-node" cx="32" cy="32" r="5" fill="#8bfaff"/>
+        </svg>
+      </div>
       <div class="mode-info">
         <div class="mode-title">Modo Reflejos</div>
         <div class="mode-desc">Pulsa los azules, evita los rojos. Mide tu velocidad de reacción.</div>
       </div>
     </div>
     <div class="mode-card" id="card-persecucion" onclick="selectMode('persecucion')">
-      <div class="mode-icon">🏃</div>
+      <div class="mode-icon">
+        <svg class="tech-mode-icon" viewBox="0 0 64 64" aria-hidden="true">
+          <defs>
+            <linearGradient id="chaseGrad" x1="8" y1="54" x2="56" y2="10">
+              <stop stop-color="#ff4fd8"/>
+              <stop offset=".5" stop-color="#6a70ff"/>
+              <stop offset="1" stop-color="#2dfcff"/>
+            </linearGradient>
+          </defs>
+          <circle class="hud-ring reverse" cx="32" cy="32" r="25" fill="none" stroke="url(#chaseGrad)" stroke-width="2.4" stroke-dasharray="5 7"/>
+          <path class="signal-line" d="M10 46 C22 43 29 35 36 24 C41 16 47 13 55 12" fill="none" stroke="#79f7ff" stroke-width="3.2" stroke-linecap="round"/>
+          <circle class="pulse-node" cx="16" cy="46" r="6" fill="#ff5ee7"/>
+          <circle class="pulse-node" cx="50" cy="15" r="6" fill="#8bfaff"/>
+          <path d="M42 27l9-13-15 5" fill="none" stroke="#2dfcff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <path class="circuit-line" d="M9 20h16M7 30h11M14 10h20" stroke="#6a70ff" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </div>
       <div class="mode-info">
         <div class="mode-title">Modo Persecución</div>
         <div class="mode-desc">Caza el círculo rojo con el ratón. La IA escapa con evasión adaptativa.</div>
       </div>
     </div>
     <div class="mode-card" id="card-memoria" onclick="selectMode('memoria')">
-      <div class="mode-icon">🧠</div>
+      <div class="mode-icon">
+        <svg class="tech-mode-icon" viewBox="0 0 64 64" aria-hidden="true">
+          <defs>
+            <linearGradient id="memoryGrad" x1="12" y1="12" x2="52" y2="52">
+              <stop stop-color="#ff4fd8"/>
+              <stop offset=".5" stop-color="#8d68ff"/>
+              <stop offset="1" stop-color="#2dfcff"/>
+            </linearGradient>
+          </defs>
+          <path d="M24 52c-8 0-14-6-14-14 0-5 3-10 7-12-1-9 6-16 15-16 8 0 15 6 15 14 5 2 8 7 8 13 0 8-6 15-15 15z"
+                fill="none" stroke="url(#memoryGrad)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path class="signal-line" d="M20 28 C28 20 37 22 43 29 M19 38 C28 44 38 43 46 36" fill="none" stroke="#79f7ff" stroke-width="2.5" stroke-linecap="round"/>
+          <path class="circuit-line" d="M24 27 L39 24 L34 40 L24 27" fill="none" stroke="#2dfcff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle class="pulse-node" cx="24" cy="27" r="4" fill="#ff5ee7"/>
+          <circle class="pulse-node" cx="39" cy="24" r="4" fill="#8bfaff"/>
+          <circle class="pulse-node" cx="34" cy="40" r="4" fill="#2dfcff"/>
+          <line class="scan-line" x1="15" y1="33" x2="50" y2="33" stroke="#ffffff" stroke-width="1.5" opacity=".45" stroke-linecap="round"/>
+        </svg>
+      </div>
       <div class="mode-info">
         <div class="mode-title">Modo Memoria</div>
         <div class="mode-desc">Recuerda posiciones y márcalas después. Mide memoria visual y concentración.</div>
       </div>
     </div>
     <div class="mode-card" id="card-stroop" onclick="selectMode('stroop')">
-      <div class="mode-icon">🎨</div>
+      <div class="mode-icon">
+        <svg class="tech-mode-icon" viewBox="0 0 64 64" aria-hidden="true">
+          <defs>
+            <linearGradient id="stroopGrad" x1="10" y1="14" x2="54" y2="50">
+              <stop stop-color="#ff4fd8"/>
+              <stop offset=".45" stop-color="#6a70ff"/>
+              <stop offset="1" stop-color="#2dfcff"/>
+            </linearGradient>
+          </defs>
+          <rect x="11" y="13" width="42" height="38" rx="12" fill="none" stroke="url(#stroopGrad)" stroke-width="3"/>
+          <path class="signal-line" d="M20 24h24M20 32h17M20 40h22" stroke="#79f7ff" stroke-width="3" stroke-linecap="round"/>
+          <circle class="pulse-node" cx="48" cy="43" r="6" fill="#ff5ee7"/>
+          <circle class="pulse-node" cx="16" cy="21" r="4" fill="#8bfaff"/>
+          <path class="circuit-line" d="M45 14c7 7 7 14 0 21M19 50c-6-7-6-14 1-21" stroke="#2dfcff" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+          <line class="scan-line" x1="17" y1="18" x2="47" y2="18" stroke="#ffffff" stroke-width="1.4" opacity=".45" stroke-linecap="round"/>
+        </svg>
+      </div>
       <div class="mode-info">
         <div class="mode-title">Modo Stroop</div>
         <div class="mode-desc">Elige el color real, no la palabra. Mide atención selectiva y control cognitivo.</div>
@@ -875,7 +1502,7 @@ td.val-state { }
   <!-- Feedback panel -->
   <div id="feedback-panel">
     <h3>⏱ Ronda completada</h3>
-    <p>Resumen de la ronda. ¿Cómo te has sentido?</p>
+    <p>Resumen de la ronda. Elige tu estado para guardar los datos.</p>
     <div class="round-summary" id="round-summary"></div>
     <div class="state-buttons">
       <button class="state-btn" onclick="saveRound('Relax')">Relax 🧘</button>
@@ -932,6 +1559,22 @@ let difficulty = Number(localStorage.getItem('np_diff')) || 1;
 let dataset = JSON.parse(localStorage.getItem('np_dataset') || '[]');
 let currentMode = 'reflejos';
 
+function enterPlayingView() {
+  document.body.classList.add('playing-focus');
+  document.body.classList.remove('round-ended');
+}
+
+function exitPlayingView() {
+  document.body.classList.remove('playing-focus');
+  document.body.classList.add('round-ended');
+}
+
+function showFullMenuView() {
+  document.body.classList.remove('playing-focus');
+  document.body.classList.remove('round-ended');
+}
+
+
 let hits = 0, misses = 0, totalClicks = 0;
 let time = 20;
 let reactionTimes = [];
@@ -941,6 +1584,8 @@ let score = 0;
 
 /* EndSession */
 function endSession() {
+  haptic('end');
+  exitPlayingView();
   isPlaying = false;
   clearInterval(tickInterval);
   cancelAnimationFrame(rafId);
@@ -1021,6 +1666,9 @@ function renderDiffPips() {
     pip.appendChild(d);
   }
   document.getElementById('diff-label').textContent = `NIV ${difficulty}`;
+
+  document.body.classList.toggle('diff-high', difficulty >= 3);
+  document.body.classList.toggle('diff-max', difficulty >= 5);
 }
 
 /* ─── Mode selection ─── */
@@ -1068,7 +1716,7 @@ function updateStats() {
 
   const pState = predictState();
   const stateEl = document.getElementById('stat-state');
-  stateEl.innerHTML = `<span class="state-pill state-${pState}">${pState}</span>`;
+  stateEl.innerHTML = `<span class="neuro-dot"></span><span class="state-pill state-${pState}">${pState}</span>`;
 
   const pct = time / 20;
   const tb = document.getElementById('timer-bar');
@@ -1089,6 +1737,20 @@ function updateStreak(good) {
   const el = document.getElementById('streak-indicator');
   el.textContent = '🔥 ×' + streak;
   el.className = streak >= 3 ? 'hot' : '';
+}
+
+
+function haptic(type = 'tap') {
+  if (!('vibrate' in navigator)) return;
+
+  const patterns = {
+    hit: 18,
+    miss: [35, 25, 35],
+    save: 25,
+    end: [20, 20, 20]
+  };
+
+  navigator.vibrate(patterns[type] || 15);
 }
 
 /* ─── VFX ─── */
@@ -1144,6 +1806,7 @@ function spawnScorePopup(x, y, text, color) {
 
 /* ─── Start game ─── */
 function startGame() {
+  enterPlayingView();
   hits = 0; misses = 0; totalClicks = 0;
   reactionTimes = []; streak = 0; score = 0;
   time = 20;
@@ -1253,6 +1916,7 @@ function handleTargetClick(type, cx, cy) {
     clearTimeout(reflexTimeout);
     hits++;
     totalClicks++;
+    haptic('hit');
     const rt = Date.now() - roundStartTime - (20 - time) * 1000;
     // better: track per-spawn
     reactionTimes.push(Date.now() - _lastSpawnTime);
@@ -1266,6 +1930,7 @@ function handleTargetClick(type, cx, cy) {
   } else {
     misses++;
     totalClicks++;
+    haptic('miss');
     updateStreak(false);
     spawnParticles(cx, cy, 'var(--red)', 6);
     spawnMissFlash(cx, cy);
@@ -1303,6 +1968,7 @@ game.addEventListener('pointerdown', (e) => {
   if (e.target !== game && e.target.id !== 'streak-indicator') return;
   misses++;
   totalClicks++;
+  haptic('miss');
   updateStreak(false);
   spawnMissFlash(e.offsetX, e.offsetY);
   spawnScorePopup(e.offsetX, e.offsetY - 10, '−1', 'var(--red)');
@@ -1412,6 +2078,7 @@ function checkCapture() {
   if (dist < 40) {
     hits++;
     totalClicks++;
+    haptic('hit');
     reactionTimes.push(Date.now() - lastCaptureTime);
     lastCaptureTime = Date.now();
     updateStreak(true);
@@ -1522,6 +2189,7 @@ game.addEventListener('pointerdown', (e) => {
 
   if (bestIndex >= 0 && bestDistance <= tolerance) {
     hits++;
+    haptic('hit');
     memorySolved.push(bestIndex);
     reactionTimes.push(Date.now() - memoryChallengeStart);
     updateStreak(true);
@@ -1540,6 +2208,7 @@ game.addEventListener('pointerdown', (e) => {
     }
   } else {
     misses++;
+    haptic('miss');
     updateStreak(false);
     spawnMissFlash(x, y);
     spawnScorePopup(x, y - 10, '−1', 'var(--red)');
@@ -1590,10 +2259,12 @@ function answerStroop(answer) {
 
   if (answer === stroopCurrentColor) {
     hits++;
+    haptic('hit');
     updateStreak(true);
     spawnScorePopup(game.clientWidth / 2, game.clientHeight / 2 - 80, '+1', 'var(--green)');
   } else {
     misses++;
+    haptic('miss');
     updateStreak(false);
     spawnScorePopup(game.clientWidth / 2, game.clientHeight / 2 - 80, '−1', 'var(--red)');
   }
@@ -1604,6 +2275,7 @@ function answerStroop(answer) {
 
 /* ─── End game ─── */
 function endGame() {
+  exitPlayingView();
   isPlaying = false;
   clearInterval(tickInterval);
   cancelAnimationFrame(rafId);
@@ -1696,6 +2368,8 @@ function getTaskType(mode) {
 
 /* ─── Save round ─── */
 async function saveRound(realState) {
+  haptic('save');
+  exitPlayingView();
   const acc = totalClicks > 0 ? Math.round((hits / totalClicks) * 100) : 0;
   const react = avg(reactionTimes);
   const predicted = predictState();
@@ -1748,6 +2422,7 @@ async function saveRound(realState) {
     </p>
     <div class="btn-row">
       <button class="btn btn-primary" onclick="startGame()">▶ Jugar otra ronda</button>
+      <button class="btn btn-secondary" onclick="document.querySelector('.mode-selector').scrollIntoView({behavior:'smooth', block:'center'})">🎮 Cambiar modo</button>
       <button class="state-btn end" onclick="endSession()">⏹ Finalizar entrenamiento</button>
     </div>
   `;
@@ -1829,6 +2504,7 @@ function clearDataset() {
 renderDataset();
 updateStats();
 renderDiffPips();
+
 </script>
 </body>
 </html>
